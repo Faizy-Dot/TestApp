@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, Image } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import * as ImagePicker from 'react-native-image-picker';
 import styles from './styles';
 import Metrix from '../../../config/Metrix';
-import axios from 'axios';
+import axiosInstance from '../../../config/axios';
 
 export default function RegisterScreen({ navigation }) {
   const [username, setUsername] = useState('');
@@ -12,6 +13,21 @@ export default function RegisterScreen({ navigation }) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [avatar, setAvatar] = useState(null); // 👈 image state
+
+  // Pick image from gallery
+  const pickImage = () => {
+    ImagePicker.launchImageLibrary({ mediaType: 'photo' }, (response) => {
+      if (response.didCancel) {
+        console.log('User cancelled image picker');
+      } else if (response.errorMessage) {
+        console.log('ImagePicker Error: ', response.errorMessage);
+      } else {
+        const source = response.assets[0]; // first selected image
+        setAvatar(source); // 👈 update state
+      }
+    });
+  };
 
   const handleRegister = async () => {
     if (!username || !email || !password || !confirmPassword) {
@@ -27,17 +43,26 @@ export default function RegisterScreen({ navigation }) {
     }
 
     try {
-      const response = await axios.post('http://192.168.1.100:5000/auth/register', {
-        username,
-        email,
-        password,
-      });
+      const formData = new FormData();
+      formData.append('username', username);
+      formData.append('email', email);
+      formData.append('password', password);
 
-      console.log("response==>>", response)
+      if (avatar) {
+        formData.append('avatar', {
+          uri: avatar.uri,
+          type: avatar.type || 'image/jpeg',
+          name: avatar.fileName || 'avatar.jpg',
+        });
+      }
+
+      const response = await axiosInstance.post('/auth/register', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
 
       if (response.status === 201) {
         Alert.alert('Registration Successful', `Welcome ${username}!`);
-        // Optionally, navigate to Login screen here
+        navigation.navigate('Login');
       } else {
         Alert.alert('Error', response.data.message || 'Registration failed');
       }
@@ -47,11 +72,35 @@ export default function RegisterScreen({ navigation }) {
     }
   };
 
-  console.log(username)
-
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Register</Text>
+
+      {/* 🔹 Avatar Picker UI */}
+      <TouchableOpacity onPress={pickImage} style={{ alignItems: 'center', marginBottom: 20 }}>
+        {avatar ? (
+          <Image
+            source={{ uri: avatar.uri }}
+            style={{ width: 100, height: 100, borderRadius: 50, borderWidth: 2, borderColor: '#ccc' }}
+          />
+        ) : (
+          <View
+            style={{
+              width: 100,
+              height: 100,
+              borderRadius: 50,
+              backgroundColor: '#ddd',
+              justifyContent: 'center',
+              alignItems: 'center',
+              borderWidth: 1,
+              borderColor: '#aaa',
+            }}
+          >
+            <Icon name="camera-plus" size={40} color="#555" />
+            <Text style={{ fontSize: 12 }}>Add Photo</Text>
+          </View>
+        )}
+      </TouchableOpacity>
 
       {/* Name */}
       <View style={styles.inputContainer}>
@@ -68,7 +117,7 @@ export default function RegisterScreen({ navigation }) {
       <View style={styles.inputContainer}>
         <Icon name="email" size={Metrix.FontLarge} color="#aaa" />
         <TextInput
-          placeholder="Email (@gmail.com)"
+          placeholder="Email (@whyapp.com)"
           style={styles.input}
           keyboardType="email-address"
           autoCapitalize="none"
@@ -88,11 +137,7 @@ export default function RegisterScreen({ navigation }) {
           onChangeText={setPassword}
         />
         <TouchableOpacity onPress={() => setShowPassword(prev => !prev)}>
-          <Icon
-            name={showPassword ? 'eye' : 'eye-off'}
-            size={20}
-            color="#aaa"
-          />
+          <Icon name={showPassword ? 'eye' : 'eye-off'} size={20} color="#aaa" />
         </TouchableOpacity>
       </View>
 
@@ -106,13 +151,9 @@ export default function RegisterScreen({ navigation }) {
           value={confirmPassword}
           onChangeText={setConfirmPassword}
         />
-          <TouchableOpacity onPress={() => setShowConfirmPassword(prev => !prev)}>
-    <Icon
-      name={showConfirmPassword ? 'eye' : 'eye-off'}
-      size={20}
-      color="#aaa"
-    />
-  </TouchableOpacity>
+        <TouchableOpacity onPress={() => setShowConfirmPassword(prev => !prev)}>
+          <Icon name={showConfirmPassword ? 'eye' : 'eye-off'} size={20} color="#aaa" />
+        </TouchableOpacity>
       </View>
 
       <TouchableOpacity style={styles.button} onPress={handleRegister}>

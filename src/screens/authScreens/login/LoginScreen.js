@@ -7,6 +7,7 @@ import axios from 'axios';
 import styles from './styles';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginUser } from '../../../redux/actions/loginAction';
+import axiosInstance from '../../../config/axios';
 
 export default function LoginScreen() {
   const navigation = useNavigation();
@@ -27,8 +28,9 @@ export default function LoginScreen() {
     }
 
     try {
-      const response = await dispatch(loginUser(email, password));
 
+     
+      const response = await dispatch(loginUser(email, password));
       if(response.success === true && response.token){
         navigation.replace("AppTabs");
       }

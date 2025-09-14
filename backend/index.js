@@ -26,30 +26,7 @@ app.get("/", async (req, res) => {
     res.status(200).json({ message: "users fetched successfully", users: users });
 });
 
-app.post("/register", async (req, res) => {
-    try {
-        const { username, email, password } = req.body;
 
-        if (!username) return res.status(400).json({ message: "Plz fill Username" });
-        if (!email) return res.status(400).json({ message: "Plz fill Email" });
-        if (!password) return res.status(400).json({ message: "Plz fill Password" });
-        const existingUser = await UserModal.findOne({ email: email });
-        if (existingUser) {
-            return res.status(400).json({ message: "User already exists" });
-        }
-
-
-        const newUser = new UserModal({ username, email, password});
-        await newUser.save();
-
-        console.log("newUSer==>", newUser)
-
-        res.status(201).json({ message: "User registered successfully", user: newUser });
-    } catch (error) {
-        console.error("Error registering user:", error);
-        res.status(500).json({ message: "Server error" });
-    }
-});
 
 // Start the Server
 app.listen(PORT, () => {
