@@ -1,6 +1,7 @@
 // backend/routers/friendRequest.js
 import express from "express";
 import authMiddleware from "./authMiddleware.js";
+import UserModel from "../models/Users.js";
 
 const router = express.Router();
 

@@ -40,7 +40,7 @@ export default function FindFriendsScreen() {
   const sendFriendRequest = async (receiverId) => {
     try {
       const response = await axiosInstance.post(
-        `/friend/send/${receiverId}`,
+        `/friendRequest/send/${receiverId}`,
         {},
         {
           headers: {
@@ -48,6 +48,7 @@ export default function FindFriendsScreen() {
           },
         }
       );
+      consol.log("sent request==>>" , response)
       return response.data; // { message: "Friend request sent" }
     } catch (error) {
       if (error.response) {
@@ -60,7 +61,7 @@ export default function FindFriendsScreen() {
 
 
   const renderFriendItem = ({ item }) => (
-    <View style={styles.friendItem}>
+    <View style={styles.friendItem} key={item._id}>
       <View style={{ flexDirection: "row", alignItems: "center" }}>
 
         {item.avatar ? (
@@ -76,7 +77,7 @@ export default function FindFriendsScreen() {
       </View>
       <TouchableOpacity
         style={[styles.addButton, item.isFriend && styles.addedButton]}
-onPress={()=> sendFriendRequest(item._id )}
+        onPress={() => sendFriendRequest(item._id)}
       >
         <Text style={styles.addButtonText}>
           {item.isFriend ? 'Added' : 'Add Friend'}
