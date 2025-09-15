@@ -54,11 +54,24 @@ router.post("/login", async (req, res) => {
   const isPasswordValid = await bcrypt.compare(password, user.password)
   if (!isPasswordValid) return res.status(400).json({ message: "Invalid Password" })
 
-  var token = jwt.sign(user, process.env.AUTH_SECRET);
+  const token = jwt.sign(
+    { id: user._id },
+    process.env.AUTH_SECRET,
+    { expiresIn: "7d" }
+  );
 
   console.log("user from bakcend=>", user)
 
-  res.status(201).json({ message: "User Login successfully", user: user, token: token });
+  res.status(200).json({
+    message: "User login successful",
+    user: {
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      avatar: user.avatar || null, // include avatar
+    },
+    token,
+  });
 })
 
 

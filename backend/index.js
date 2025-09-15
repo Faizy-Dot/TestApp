@@ -20,13 +20,6 @@ mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log("Connected to MongoDB"))
     .catch(err => console.log("MongoDB connection error:", err));
 
-app.get("/", async (req, res) => {
-
-    let users = await UserModal.find()
-    res.status(200).json({ message: "users fetched successfully", users: users });
-});
-
-
 
 // Start the Server
 app.listen(PORT, () => {
