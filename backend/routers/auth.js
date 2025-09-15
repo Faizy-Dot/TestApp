@@ -3,6 +3,7 @@ import UserModel from "../models/Users.js";
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 import upload from "../multer.js";
+import authMiddleware from "./authMiddleware.js";
 
 const router = express.Router();
 
@@ -60,7 +61,6 @@ router.post("/login", async (req, res) => {
     { expiresIn: "7d" }
   );
 
-  console.log("user from bakcend=>", user)
 
   res.status(200).json({
     message: "User login successful",
@@ -73,6 +73,17 @@ router.post("/login", async (req, res) => {
     token,
   });
 })
+
+// Protected route: Get all users
+router.get("/users", authMiddleware, async (req, res) => {
+  try {
+    // exclude password from result
+    const users = await UserModel.find({}, "-password");
+    res.status(200).json({ message: "Users fetched successfully", users });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
 
 export default router; // Ensure you export the router

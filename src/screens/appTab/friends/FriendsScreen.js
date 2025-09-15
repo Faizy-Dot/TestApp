@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,8 @@ import {
   Image,
   TouchableOpacity,
 } from 'react-native';
+import axiosInstance from '../../../config/axios';
+import { useSelector } from 'react-redux';
 
 const sampleFriends = [
   {
@@ -34,6 +36,8 @@ export default function FriendsScreen() {
   const [search, setSearch] = useState('');
   const [friends, setFriends] = useState(sampleFriends);
 
+  const { user, token } = useSelector(state => state.login)
+
   const handleAddFriend = (id) => {
     setFriends(prev =>
       prev.map(friend =>
@@ -45,6 +49,26 @@ export default function FriendsScreen() {
   const filteredFriends = friends.filter(friend =>
     friend.name.toLowerCase().includes(search.toLowerCase())
   );
+
+
+  const allUsers = async () => {
+    try {
+      const response = await axiosInstance.get("/auth/users", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log("Users =>", response.data.users);
+      return response.data.users;
+    } catch (error) {
+      console.log("Error fetching users:", error.response?.data || error);
+    }
+  }
+
+  useEffect(() => {
+    allUsers()
+  }, [])
 
   const renderFriendItem = ({ item }) => (
     <View style={styles.friendItem}>
