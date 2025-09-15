@@ -48,7 +48,7 @@ export default function FindFriendsScreen() {
           },
         }
       );
-      consol.log("sent request==>>" , response)
+      console.log("sent request==>>" , response)
       return response.data; // { message: "Friend request sent" }
     } catch (error) {
       if (error.response) {
@@ -61,7 +61,7 @@ export default function FindFriendsScreen() {
 
 
   const renderFriendItem = ({ item }) => (
-    <View style={styles.friendItem} key={item._id}>
+    <View style={styles.friendItem} >
       <View style={{ flexDirection: "row", alignItems: "center" }}>
 
         {item.avatar ? (
@@ -101,7 +101,7 @@ export default function FindFriendsScreen() {
         data={users.filter(u =>
           u.username.toLowerCase().includes(search.toLowerCase())
         )}
-        keyExtractor={item => item.id} // make sure id is string
+        keyExtractor={item => item._id} // make sure id is string
         renderItem={renderFriendItem}
         contentContainerStyle={styles.listContainer}
         ListEmptyComponent={() => (

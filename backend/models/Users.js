@@ -9,17 +9,27 @@ const userSchema = new Schema(
     password: { type: String, required: true },
     avatar: { type: String, default: "" }, // Cloudinary image URL
 
-    // New fields 👇
+    // Confirmed friends
     friends: [
       {
         type: Schema.Types.ObjectId,
-        ref: "users", // references the same User model
+        ref: "users",
       },
     ],
+
+    // Incoming requests (other users → me)
     requests: [
       {
         type: Schema.Types.ObjectId,
-        ref: "users", // users who sent friend requests
+        ref: "users",
+      },
+    ],
+
+    // Outgoing requests (me → other users)
+    sentRequests: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "users",
       },
     ],
   },

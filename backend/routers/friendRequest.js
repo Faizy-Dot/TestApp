@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.post("/send/:id", authMiddleware, async (req, res) => {
     try {
-        const senderId = req.user.id; // from JWT
+        const senderId = req.user.id;
         const receiverId = req.params.id;
 
         if (senderId === receiverId) {
@@ -24,19 +24,24 @@ router.post("/send/:id", authMiddleware, async (req, res) => {
             return res.status(400).json({ message: "Already friends" });
         }
 
-        // Already requested?
-        if (receiver.requests.includes(senderId)) {
+        // Already requested (incoming or outgoing)?
+        if (receiver.requests.includes(senderId) || sender.sentRequests.includes(receiverId)) {
             return res.status(400).json({ message: "Request already sent" });
         }
 
-        receiver.requests.push(senderId);
+        // Update both users
+        receiver.requests.push(senderId);   // incoming
+        sender.sentRequests.push(receiverId); // outgoing
+
         await receiver.save();
+        await sender.save();
 
         res.json({ message: "Friend request sent" });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
+
 
 
 export default router;
