@@ -11,45 +11,12 @@ import {
 import axiosInstance from '../../../config/axios';
 import { useSelector } from 'react-redux';
 
-const sampleFriends = [
-  {
-    id: '1',
-    name: 'Michael Jordan',
-    avatar: 'https://randomuser.me/api/portraits/men/11.jpg',
-    isFriend: false,
-  },
-  {
-    id: '2',
-    name: 'Emma Watson',
-    avatar: 'https://randomuser.me/api/portraits/women/22.jpg',
-    isFriend: true,
-  },
-  {
-    id: '3',
-    name: 'Chris Evans',
-    avatar: 'https://randomuser.me/api/portraits/men/33.jpg',
-    isFriend: false,
-  },
-];
 
-export default function FriendsScreen() {
+export default function FindFriendsScreen() {
   const [search, setSearch] = useState('');
-  const [friends, setFriends] = useState(sampleFriends);
+  const [users, setUsers] = useState([])
 
   const { user, token } = useSelector(state => state.login)
-
-  const handleAddFriend = (id) => {
-    setFriends(prev =>
-      prev.map(friend =>
-        friend.id === id ? { ...friend, isFriend: !friend.isFriend } : friend
-      )
-    );
-  };
-
-  const filteredFriends = friends.filter(friend =>
-    friend.name.toLowerCase().includes(search.toLowerCase())
-  );
-
 
   const allUsers = async () => {
     try {
@@ -59,8 +26,8 @@ export default function FriendsScreen() {
         },
       });
 
-      console.log("Users =>", response.data.users);
-      return response.data.users;
+      // console.log("Users =>", response.data.users);
+      setUsers(response.data.users)
     } catch (error) {
       console.log("Error fetching users:", error.response?.data || error);
     }
@@ -70,13 +37,26 @@ export default function FriendsScreen() {
     allUsers()
   }, [])
 
+
+
   const renderFriendItem = ({ item }) => (
     <View style={styles.friendItem}>
-      <Image source={{ uri: item.avatar }} style={styles.avatar} />
-      <Text style={styles.name}>{item.name}</Text>
+      <View style={{ flexDirection: "row", alignItems: "center" }}>
+
+        {item.avatar ? (
+          <Image source={{ uri: item.avatar }} style={styles.avatar} />
+        ) : (
+          <View style={styles.avatarPlaceholder}>
+            <Text style={styles.avatarText}>
+              {item.username?.charAt(0).toUpperCase()}
+            </Text>
+          </View>
+        )}
+        <Text>{item.username}</Text>
+      </View>
       <TouchableOpacity
         style={[styles.addButton, item.isFriend && styles.addedButton]}
-        onPress={() => handleAddFriend(item.id)}
+
       >
         <Text style={styles.addButtonText}>
           {item.isFriend ? 'Added' : 'Add Friend'}
@@ -97,10 +77,17 @@ export default function FriendsScreen() {
 
       {/* Friends List */}
       <FlatList
-        data={filteredFriends}
-        keyExtractor={item => item.id}
+        data={users.filter(u =>
+          u.username.toLowerCase().includes(search.toLowerCase())
+        )}
+        keyExtractor={item => item.id} // make sure id is string
         renderItem={renderFriendItem}
         contentContainerStyle={styles.listContainer}
+        ListEmptyComponent={() => (
+          <View style={{ alignItems: 'center', marginTop: 50 }}>
+            <Text style={{ fontSize: 16, color: 'gray' }}>No users found 😕</Text>
+          </View>
+        )}
       />
     </View>
   );
@@ -119,20 +106,47 @@ const styles = StyleSheet.create({
   friendItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 0.5,
-    borderBottomColor: '#ddd',
+    marginVertical: 8,
+    justifyContent: "space-between",
+    borderBottomWidth : 1,
+    borderColor : '#f1f1f1',
+    paddingBottom : 10
   },
-  avatar: { width: 50, height: 50, borderRadius: 25, marginRight: 12 },
-  name: { flex: 1, fontSize: 16, fontWeight: '500' },
+  avatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 10,
+  },
+  avatarPlaceholder: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#4a90e2', // fallback color
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  avatarText: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  name: {
+    flex: 1,
+    fontSize: 16,
+  },
   addButton: {
-    backgroundColor: '#007bff',
-    paddingVertical: 6,
     paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: 8,
+    backgroundColor: '#4a90e2',
   },
   addedButton: {
-    backgroundColor: 'gray',
+    backgroundColor: '#aaa',
   },
-  addButtonText: { color: '#fff', fontSize: 14, fontWeight: '600' },
+  addButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
 });

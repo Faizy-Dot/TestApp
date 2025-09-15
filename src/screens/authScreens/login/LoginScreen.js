@@ -31,10 +31,8 @@ export default function LoginScreen() {
 
      
       const response = await dispatch(loginUser(email, password));
-      if(response.success === true && response.token){
-        navigation.replace("AppTabs");
-      }
-
+      console.log("response==>>" , response)
+   
     } catch (err) {
       console.log("Err", err)
     }

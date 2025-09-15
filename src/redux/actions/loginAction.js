@@ -19,7 +19,7 @@ export const loginUser = (email, password) => async dispatch => {
 
     console.log("res from redux == >", response)
 
-    if (response.status === 201) {
+    if (response.status === 200) {
       const user = response.data.user;
       const token = response.data.token;
 
@@ -28,13 +28,11 @@ export const loginUser = (email, password) => async dispatch => {
         payload: { user, token },
       });
       return { success: true, user, token };
-      Alert.alert('Success', `Welcome back, ${user.username}`);
     } else {
       dispatch({
         type: LOGIN_FAILURE,
         payload: response.data.message || 'Login failed',
       });
-      Alert.alert('Error', response.data.message || 'Login failed');
     }
   } catch (error) {
     const errorMsg = error.response?.data?.message || 'Something went wrong';
