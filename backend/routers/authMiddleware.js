@@ -1,5 +1,4 @@
 import jwt from "jsonwebtoken";
-import UserModel from "../models/UserModel.js";
 
 // Middleware to check token
 const authMiddleware = (req, res, next) => {
@@ -18,4 +17,5 @@ const authMiddleware = (req, res, next) => {
   }
 };
 
+export default authMiddleware;
 
