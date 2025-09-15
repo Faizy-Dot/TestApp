@@ -4,7 +4,7 @@ import morgan from "morgan";
 import mongoose from "mongoose";
 import 'dotenv/config'
 import authRoutes from "./routers/auth.js";
-import friendRequestRoutes from "./routers/friendRequest.js"
+import friendRequest from "./routers/friendRequest.js"
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -14,7 +14,7 @@ app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
 app.use("/auth", authRoutes)
-app.use("/friendRequest" ,friendRequestRoutes )
+app.use("/friendRequest" ,friendRequest )
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI)
