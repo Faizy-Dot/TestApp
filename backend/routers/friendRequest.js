@@ -43,6 +43,29 @@ router.post("/send/:id", authMiddleware, async (req, res) => {
 });
 
 
+// Get incoming requests
+router.get("/incoming", authMiddleware, async (req, res) => {
+    try {
+        const user = await UserModel.findById(req.user.id)
+            .populate("requests", "username email avatar");
+        res.json({ requests: user.requests });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Get sent requests
+router.get("/sent", authMiddleware, async (req, res) => {
+    try {
+        const user = await UserModel.findById(req.user.id)
+            .populate("sentRequests", "username email avatar");
+        res.json({ sentRequests: user.sentRequests });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+
 
 export default router;
 
