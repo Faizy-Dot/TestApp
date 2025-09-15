@@ -37,6 +37,26 @@ export default function FindFriendsScreen() {
     allUsers()
   }, [])
 
+  const sendFriendRequest = async (receiverId) => {
+    try {
+      const response = await axiosInstance.post(
+        `/friend/send/${receiverId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response.data; // { message: "Friend request sent" }
+    } catch (error) {
+      if (error.response) {
+        throw new Error(error.response.data.message || "Failed to send request");
+      }
+      throw new Error("Network error");
+    }
+  };
+
 
 
   const renderFriendItem = ({ item }) => (
@@ -56,7 +76,7 @@ export default function FindFriendsScreen() {
       </View>
       <TouchableOpacity
         style={[styles.addButton, item.isFriend && styles.addedButton]}
-
+onPress={()=> sendFriendRequest(item._id )}
       >
         <Text style={styles.addButtonText}>
           {item.isFriend ? 'Added' : 'Add Friend'}
@@ -108,9 +128,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginVertical: 8,
     justifyContent: "space-between",
-    borderBottomWidth : 1,
-    borderColor : '#f1f1f1',
-    paddingBottom : 10
+    borderBottomWidth: 1,
+    borderColor: '#f1f1f1',
+    paddingBottom: 10
   },
   avatar: {
     width: 50,
