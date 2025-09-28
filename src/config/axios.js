@@ -2,7 +2,9 @@ import axios from 'axios';
 import store from '../redux/store';
 
 const axiosInstance = axios.create({
-    baseURL: "https://whyapp.up.railway.app",
+
+    // baseURL: "https://whyapp.up.railway.app",
+    baseURL: "http://192.168.1.103:5000",
     timeout: 10000,
     headers: {
         'Content-Type': 'application/json',
@@ -13,7 +15,7 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
     (config) => {
         const state = store?.getState();
-        const token = state?.login?.user?.token;
+        const token = state?.login?.token;
         
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;

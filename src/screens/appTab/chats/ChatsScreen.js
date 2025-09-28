@@ -1,5 +1,5 @@
-import { useNavigation } from '@react-navigation/native';
-import React, { useState } from 'react';
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -8,53 +8,87 @@ import {
   TextInput,
   Image,
   TouchableOpacity,
-} from 'react-native';
+  ActivityIndicator,
+} from "react-native";
+import axiosInstance from "../../../config/axios";
+import Icon from "react-native-vector-icons/MaterialIcons";
 
-const sampleChats = [
-  {
-    id: '1',
-    name: 'John Doe',
-    lastMessage: 'Hey! How are you?',
-    time: '09:30 AM',
-    avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
-  },
-  {
-    id: '2',
-    name: 'Jane Smith',
-    lastMessage: 'Let’s catch up tomorrow.',
-    time: 'Yesterday',
-    avatar: 'https://randomuser.me/api/portraits/women/2.jpg',
-  },
-  {
-    id: '3',
-    name: 'Alex Johnson',
-    lastMessage: 'Got it, thanks!',
-    time: 'Mon',
-    avatar: 'https://randomuser.me/api/portraits/men/3.jpg',
-  },
-];
 
 export default function ChatsScreen() {
-  const [search, setSearch] = useState('');
-const navigation = useNavigation()
-  const filteredChats = sampleChats.filter(chat =>
-    chat.name.toLowerCase().includes(search.toLowerCase())
+  const [search, setSearch] = useState("");
+  const [chats, setChats] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const navigation = useNavigation();
+
+  const fetchChats = async () => {
+    try {
+      setLoading(true);
+      const res = await axiosInstance.get("/friendRequest/my-chats");
+      setChats(res.data || []);
+    } catch (err) {
+      console.log("Error fetching chats:", err.response?.data || err.message);
+      setChats([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+  // console.log("chats==>>" , chats)
+
+  // ✅ Jab bhi Chats tab focus me aaye, API call ho
+  useFocusEffect(
+    useCallback(() => {
+      fetchChats();
+    }, [])
   );
 
-  const renderChatItem = ({ item }) => (
-    <TouchableOpacity style={styles.chatItem} onPress={() => navigation.navigate('Chating', { user: item })}>
-      <Image source={{ uri: item.avatar }} style={styles.avatar} />
+  // Search filter
+  const filteredChats = (chats || []).filter((chat) =>
+    chat?.username?.toLowerCase().includes(search.toLowerCase())
+  );
+  
+  // Render each chat item
+
+const renderChatItem = ({ item }) => {
+  return (
+    <TouchableOpacity
+      style={styles.chatItem}
+      onPress={() => navigation.navigate("Chating", { user: item })}
+    >
+      {/* Avatar */}
+      {item.avatar ? (
+        <Image source={{ uri: item.avatar }} style={styles.avatar} />
+      ) : (
+        <View style={[styles.avatar, styles.avatarFallback]}>
+          <Text style={styles.avatarText}>
+            {item.username.charAt(0).toUpperCase()}
+          </Text>
+        </View>
+      )}
+
+      {/* Chat Info */}
       <View style={styles.chatInfo}>
         <View style={styles.row}>
-          <Text style={styles.name}>{item.name}</Text>
-          <Text style={styles.time}>{item.time}</Text>
+          <Text style={styles.name}>{item.username}</Text>
+          <Text style={styles.time}>
+            {item.lastMessage?.time || "Just now"}
+          </Text>
         </View>
         <Text style={styles.message} numberOfLines={1}>
-          {item.lastMessage}
+          {item.lastMessage?.text || "Start a conversation..."}
         </Text>
       </View>
+
+      {/* Delete Icon */}
+      <TouchableOpacity
+        onPress={() => console.log("Delete pressed for:", item.id)} // yahan delete ka function lagao
+        style={styles.deleteButton}
+      >
+        <Icon name="delete" size={24} color="red" />
+      </TouchableOpacity>
     </TouchableOpacity>
   );
+};
+
 
   return (
     <View style={styles.container}>
@@ -66,21 +100,35 @@ const navigation = useNavigation()
         onChangeText={setSearch}
       />
 
-      {/* Chat List */}
-      <FlatList
-        data={filteredChats}
-        keyExtractor={item => item.id}
-        renderItem={renderChatItem}
-        contentContainerStyle={styles.listContainer}
-      />
+      {/* Loading state */}
+      {loading ? (
+        <ActivityIndicator
+          size="large"
+          color="blue"
+          style={{ marginTop: 20 }}
+        />
+      ) : (
+        <FlatList
+          data={filteredChats}
+          keyExtractor={(item) => item._id}
+          renderItem={renderChatItem}
+          contentContainerStyle={styles.listContainer}
+          ListEmptyComponent={
+            <Text style={{ textAlign: "center", marginTop: 20, color: "gray" }}>
+              No chats found
+            </Text>
+          }
+        />
+      )}
     </View>
   );
 }
 
+
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: "#fff" },
   searchInput: {
-    backgroundColor: '#f1f1f1',
+    backgroundColor: "#f1f1f1",
     margin: 10,
     padding: 12,
     borderRadius: 10,
@@ -90,16 +138,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   chatItem: {
-    flexDirection: 'row',
+    flexDirection: "row",
     paddingVertical: 12,
     borderBottomWidth: 0.5,
-    borderBottomColor: '#ddd',
-    alignItems: 'center',
+    borderBottomColor: "#ddd",
+    alignItems: "center",
   },
   avatar: { width: 50, height: 50, borderRadius: 25, marginRight: 12 },
+  avatarFallback: {
+    backgroundColor: "#ccc",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  avatarText: { fontSize: 18, fontWeight: "bold", color: "#fff" },
   chatInfo: { flex: 1 },
-  row: { flexDirection: 'row', justifyContent: 'space-between' },
-  name: { fontSize: 16, fontWeight: '600' },
-  time: { fontSize: 12, color: 'gray' },
-  message: { fontSize: 14, color: 'gray', marginTop: 4 },
+  row: { flexDirection: "row", justifyContent: "space-between" },
+  name: { fontSize: 16, fontWeight: "600" },
+  time: { fontSize: 12, color: "gray" },
+  message: { fontSize: 14, color: "gray", marginTop: 4 },
 });

@@ -32,6 +32,14 @@ const userSchema = new Schema(
         ref: "users",
       },
     ],
+
+    // Chats (store reference to other users I have chats with)
+    chats: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "users",
+      },
+    ],
   },
   { timestamps: true }
 );
